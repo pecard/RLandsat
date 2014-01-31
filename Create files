@@ -22,35 +22,34 @@ v.utm28n <- CRS("+init=epsg:32628") # UTM 28N Landsat Images
 v.wgs84 <- CRS("+init=epsg:4326") # WGS84 Long Lat
 ## Study site frame extent ----------------------------------------------------------
 ### Create rectangular area for image cropping
-### For Bissau
+### Bissau
 v.ae <-  extent(c(418875, 434025, 1200585, 1224015)) # PNMJVP UTM28N
 ae <- readOGR(dsn = file.path(dir.shp), layer = 'BijagosUTM_Buf200m')
 proj4string(ae) <- v.utm28n # Asign projection WGS84
 ## Build Mask Raster to keep study area only
 ### 1st: Read a single Band to get the desired extent based on satellite images
-f.CreateMask <- function(x){
+f.CreateMask <- function(x = x, extent = v.ae, polygon = ae){
   x <- grep(".tif$", list.files(file.path(dir.work,dir.tif), all.files = F),
             ignore.case = TRUE, value = TRUE)[1] 
   band <- raster(file.path(dir.work, dir.tif, x),
                  package = "raster")
   dataType(band) # Must be INT2U for Landsat 8. Range of Values: 0 to 65534
+  stopifnot(!is.na(band@crs)) # Check projection
   band.ae <- crop(band, v.ae) # Crop band to AE Extent
-  dataType(band.ae) <- dataType(band)
   ## 2nd: Create the Mask raster to the croped band extent
   ae.r <- raster(extent(band.ae)) # Raster AE: resolucao 30m (Landast)
   res(ae.r) <- 30 # Define resolution
   ae.r[] <- 1 # Defalt value
   projection(ae.r) <- v.utm28n # Assign projection
-  #dataType(ae.r) <- "INT1U"
   ## Overlay AE poly to AE Extent raster
   ## Mask will have 1 and NA values
   msk.ae <- mask(ae.r, ae) 
   #dataType(mask_ae) <- "INT1U" 
   ## Evaluate rasters
-  stopifnot(compareRaster(mask.ae, band.ae)) 
+  stopifnot(compareRaster(msk.ae, band.ae)) 
   msk.ae
 }
-mask.ae <- f.CreateMask(x)
+mask.ae <- f.CreateMask(x = x, extent = v.ae, polygon = ae)
 # Satelite parameters and data -----------------------------------------------------
 ## Landsat 8 Scene Metadata: MTL File -----------------------------------------------
 ### Metadata file contains scene acquisition details and correction parameters
@@ -69,7 +68,7 @@ mtl <- read.delim(file.path(dir.work, dir.tif,
 ### http://landsat.usgs.gov/L8_band_combos.php : Band References
 ### ESUN and OLI: http://landsat.usgs.gov/ESUN.php
 ## DN to uncorrected TOA reflectance: planetary reflectance
-f.ToarL8 <- function(x=x,  i = i){
+f.ToarL8 <- function(x=x,  i=i){
   # uncorrected TOA reflectance
   i.lsat_ref <- (x * as.numeric(mtl[grep(paste0("REFLECTANCE_MULT_BAND_", i),
                                          mtl$GROUP), 2]) +
@@ -82,11 +81,14 @@ f.ToarL8 <- function(x=x,  i = i){
   i.toa
 }
 ### USER Topographic Correction function: Cosine, CCorrection and Minnaert
-f.TopoCor <- function(x, method = 'minnaert') {
+### applied TOA corrected 
+f.TopoCor <- function(x = x, i = i, method = 'minnaert') {
+  message('Image will be corrected to planetary TOA reflectances')
   METHODS <- c('none', 'cosine', 'ccorrection', 'minnaert')
   method <- pmatch(method, METHODS)
+  x <- f.ToarL8(x=x,  i=i)
   if(method == 1){
-    message('Message: No change will be made')
+    message('Message: No Topo correction will be made')
     xout <- x
   } else if(method == 2){
     # DEM slope and Aspect
@@ -128,10 +130,10 @@ f.TopoCor <- function(x, method = 'minnaert') {
   } else message('Message: Method not implemented')
   xout
 }
-
+f.TopoCor(x = x, i = i, method = 'none')
 # Function to create radiometric corrected Files -----------------------------------
 # For original Landsat Product only
-f.idrisidata <- function(x, write = T) {
+f.idrisidata <- function(x, write = F, topocor = 'none', mask = T) {
   i.mtl <- read.delim(file.path(dir.work, dir.tif,
                                 grep('_MTL.txt',
                                      list.files(file.path(dir.work, dir.tif)),
@@ -143,54 +145,45 @@ f.idrisidata <- function(x, write = T) {
   i.stk.toar <- stack()
   #i.stk.toart <- stack() # topocorr
   i.lstk <- list()
-  for (i in 1:length(i.list.tif)){
+  for (i in 1:length(i.list.tif)) {
     # Name
     i.fname <- substr(i.list.tif[i], 1, (nchar(i.list.tif[i]) - 4))
     i.names <- paste0('B', i)
     # Read Geotif raster
-    i.img.tmp <- raster(file.path(dir.work, dir.tif, i.list.tif[i]),
-                        package = "raster", varname = fname, dataType = 'INT2U')
+    i.tmp <- raster(file.path(dir.work, dir.tif, i.list.tif[i]),
+                    package = "raster", varname = fname, dataType = 'INT2U')
     #projection(i.img.tmp) <- v.utm28n
     # Crop and apply mask   
-    i.img.crop.m <- crop(i.img.tmp, v.ae, datatype = 'INT2U')
-    # DN to uncorrected TOA Reflectance with Mask overlay
-    i.toar <- f.ToarL8(x = i.img.crop.m, i = i)
-    i.toarmsk <- i.toar * mask.ae
-    #projection(i.toarmsk) <- v.utm28n
-    i.toarmsk@data@names <- i.names
+    i.crop <- crop(i.tmp, v.ae)
     # uncorrected TOA Reflectance with Topographic correction with mask overlay
-    #i.toart <- f.TopoCor(i.toar, method = topocor)
-    #i.toartmsk <- i.toart * mask_ae
-    #i.toartmsk@data@names <- i.names
-    # Write uncorrected TOA Reflectance file
-    #gdal
-    #writeGDAL(as(i.l8, "SpatialGridDataFrame"), fname = "D:\\idri.rst", drivername = "RST") 
+    i.toar <- f.TopoCor(x = i.crop, i = i, method = topocor) 
+    if(mask == T) {
+      i.toar <- i.toar * mask.ae
+    }
+    i.toar@data@names <- i.names    
+    
     # Create Stack
     if(i < 8) {
-      i.stk.toar <- addLayer(i.stk.toar, i.toarmsk)
+      i.stk.toar <- addLayer(i.stk.toar, i.toar)
       #i.stk.toart <- addLayer(i.stk.toart, i.toartmsk)
     }
     # Write IDRISI raster group rgf for uncorrected TOA Reflectance
     if(write == T) {
-      writeRaster(i.toarmsk, filename = file.path(dir.work, dir.tif, dir.rst,
-                                                  paste0(i.fname,'T', i)),
+      ## gdal
+      ##writeGDAL(as(i.l8, "SpatialGridDataFrame"),
+      ##fname = "D:\\idri.rst", drivername = "RST") 
+      writeRaster(i.toar, filename = file.path(dir.work, dir.tif, dir.rst,
+                                               paste0(i.fname,'T', i)),
                   datatype = 'FLT4S', format = 'RST',
                   overwrite = TRUE, NAflag = -9999)
       fileConn <- file(file.path(dir.work, dir.tif, dir.rst, "ae_toar.rgf"))
-      writeLines(c(length(i.list.tif), paste0(substr(i.list.tif, 1,
-                                                     (nchar(i.list.tif[1]) - 4)), 'T')),
+      writeLines(c(length(i.list.tif),
+                   paste0(substr(i.list.tif, 1, (nchar(i.list.tif[1]) - 4)), 'T')),
                  fileConn)
       close(fileConn)
-    } else message (paste0('Message: no raster file will be created for band ', i))
-    # Write IDRISI raster group rgf for TOA with COSINE Topographic correction
-    #fileConn <- file(file.path(dir.work, dir.tif, dir.rst, "ae_toar_topo.rgf"))
-    #writeLines(c(length(i.list.tif), substr(i.list.tif, 1,
-    #                                        (nchar(i.list.tif[1]) - 4))), fileConn)
-    #close(fileConn)
-    #i.lstk[[1]] <- i.stk.toar
-    #i.lstk[[2]] <- i.stk.toart
+    }
   }
   i.stk.toar
 }
 
-l8.files <- f.idrisidata(x, write = F)
+l8.files <- f.idrisidata(x, write = F, topocor = 'none', mask = T)
