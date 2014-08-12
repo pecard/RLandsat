@@ -21,12 +21,12 @@ sessionInfo() # basics of used session
 
 # Folders --------------------------------------------------------------------------
 ## Adjust for Local work paths
-dir.work <- 'S:/Raster/Landsat' # Alterar para Disco Local
+dir.work <- 'mfolder' # Alterar para Disco Local
 dir.rst   <- 'rst' # Criar no dir.work do disco local
 dir.tif <- 'tif'  # Criar no dir.work do disco local
-dir.shp <- 'D:/Dropbox/Kumbira2010/SIG/Vetor/Shapefiles_StudySite'
-dir.aster <- 'S:/Raster/AsterGDEM/Angola' # Alterar para o Local Folder
-dir.srtm <- 'S:/Raster/SRTM90m/Angola' # Alterar para o Local Folder
+dir.shp <- './Shapefiles_StudySite'
+dir.aster <- './aster' # Alterar para o Local Folder
+dir.srtm <- '/.srtm' # Alterar para o Local Folder
 ### Data das Landsat. Define as many as necesary.
 ### dir.fun must be changed for all analysis
 
@@ -63,11 +63,9 @@ p.utm33s <- CRS("+init=epsg:32733") # UTM 33S Landsat Images
 p.wgs84 <- CRS("+init=epsg:4326") # WGS84 Long Lat
 
 #' Study site frame extent ----------------------------------------------------------
-#'# Kumbira --
 #'## Create rectangular area for image cropping
 #'## A projected spatialpolydf will be created and projected to utm33N
-#'## Kumbira Study Area 2014: larger polygon
-ae <- readOGR(dsn = file.path(dir.shp), layer = 'studyarea2014_utm33s')
+ae <- readOGR(dsn = file.path(dir.shp), layer = 'layername')
 proj4string(ae) <- p.utm33s # Asign projection WGS84
 if(!is.projected(ae)) ae <- spTransform(ae, p.utm33n)
 ae <- spTransform(ae, p.utm33n) # if UTM projection is South
