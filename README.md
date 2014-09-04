@@ -5,9 +5,10 @@ Collection of R code for Landsat imagery manipulation and Land Cover Classificat
 Primarily developed for Landsat 8 OLI imagery.
 Scripts include:
 
-Image reading
-
-Cropping and Masking
-
-Topographic and Atmospheric correction
+- Image and MTL reading
+- Cropping and Masking when a ROI is provided
+- Topographic and Atmospheric correction using SRTM or ASTER GDEM
+- Unsupervised (cluster) classification
+- Signature development and simple "purify" aproach
+- Supervised classification with Random Forest and Structure Vector Machine
 
