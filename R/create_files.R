@@ -1,12 +1,18 @@
-# ==================================================================================
-# Create Radimoetric and Topographic corrected files from Landsat 8 OLI
-# Paulo E. Cardoso 03-03-2014
-# Version v8
-# R version 3.0.2 rgdal_0.8-16  raster_2.2-16 sp_1.0-14
-## Utiliza dados de Digital Elevation Model (DEM) Aster (30m) ou SRTM (90m)
-### ASTER GDEM: Usar o Tile ASTGTM2_S12E014
-### SRTM v4.1: usar o Tile srtm_39_15
-# ==================================================================================
+#' ==================================================================================
+#' Create Radimoetric and Topographic corrected files from Landsat 8 OLI
+#' Paulo E. Cardoso 03-03-2014
+#' Version v8
+#' R version 3.0.2 rgdal_0.8-16  raster_2.2-16 sp_1.0-14
+#'# Utiliza dados de Digital Elevation Model (DEM) Aster (30m) ou SRTM (90m)
+#'## ASTER GDEM: Usar o Tile ASTGTM2_S12E014
+#'## SRTM v4.1: usar o Tile srtm_39_15
+#' ==================================================================================
+
+#' TODO =============================================================================
+#'# Incorporate Image texture from glcm package
+#'# http://azvoleff.com/articles/glcm-0-2-released/
+#' Studyteamlucc package from github repository https://github.com/azvoleff/teamlucc
+#' ==================================================================================
 
 # Packages necessarios
 kpacks <- c("raster", "sp", "rgdal", 'rgeos')
@@ -19,8 +25,8 @@ sessionInfo() # basics of used session
 # R version 3.0.2 (2013-09-25)
 # [1] rgeos_0.3-3   rgdal_0.8-16  raster_2.2-16 sp_1.0-14
 
-# Folders --------------------------------------------------------------------------
-## Adjust for Local work paths
+#' Folders --------------------------------------------------------------------------
+#'# Adjust for Local work paths
 dir.work <- 'mfolder' # Alterar para Disco Local
 dir.rst   <- 'rst' # Criar no dir.work do disco local
 dir.tif <- 'tif'  # Criar no dir.work do disco local
