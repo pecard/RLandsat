@@ -1,6 +1,6 @@
 #' ==================================================================================
 #' Create Radimoetric and Topographic corrected files from Landsat 8 OLI
-#' Paulo E. Cardoso 03-03-2014
+#' Paulo E. Cardoso 16-09-2014
 #' Version v8
 #' R version 3.0.2 rgdal_0.8-16  raster_2.2-16 sp_1.0-14
 #'# Utiliza dados de Digital Elevation Model (DEM) Aster (30m) ou SRTM (90m)
