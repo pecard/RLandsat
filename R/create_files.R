@@ -12,6 +12,8 @@
 #'# Incorporate Image texture from glcm package
 #'# http://azvoleff.com/articles/glcm-0-2-released/
 #' Studyteamlucc package from github repository https://github.com/azvoleff/teamlucc
+#' Surface reflectances with DOS atmospheric correction
+#'# http://grass.osgeo.org/grass65/manuals/i.landsat.toar.html
 #' ==================================================================================
 
 # Packages necessarios
@@ -48,7 +50,7 @@ dir.create(file.path(dir.work, dir.fun, dir.tif))
 save.image(file.path(dir.work, dir.fun, paste0(dir.fun,'.RData')))
 load(file.path(dir.work, dir.fun, paste0(dir.fun,'.RData'))
 
-#'# Landsat 8 Scene Metadata: MTL File ---------------------------------------------
+#'# Landsat 8 Scene Metadata: MTL File -----------------------------------------------
 #'## Metadata file contains scene acquisition details and correction parameters
 #'## Unzip the MTL file from landsat L8 zipped .tar file
 #'## MTL must be with Landsat TIF files, at the exact same folder
@@ -61,7 +63,7 @@ mtl <- read.delim(file.path(dir.work, dir.fun,
 mtl[grep("DATE_ACQUIRED", mtl$GROUP), 2]
 mtl[grep("LANDSAT_SCENE_ID", mtl$GROUP), 2]
 
-#' Local parameters ----------------------------------------------------------------
+#' Local parameters -----------------------------------------------------------------
 #'# Projections
 #p.utm28n <- CRS("+init=epsg:32628") # UTM 28N Landsat Images
 p.utm33n <- CRS("+init=epsg:32633") # UTM 33N Landsat Images
@@ -78,8 +80,8 @@ ae <- spTransform(ae, p.utm33n) # if UTM projection is South
 #'## Create Extent from ae or provide another Shape for a different extent 
 roi <- extent(ae) # a rectangular area covering ae polygon extent
 
-#'---------------TEST ONLY ---------------------------
-#'## Smaller subarea of ROI for test purposes --------
+#'---------------TEST ONLY ----------------------------
+#'## Smaller subarea of ROI for test purposes ---------
 roi2 <- as(roi - c(3000, 7000), 'SpatialPolygons')
 proj4string(roi2) <- p.utm33n
 ae2 <- gIntersection(ae, roi2, byid = TRUE)
