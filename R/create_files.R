@@ -14,7 +14,7 @@
 #' Studyteamlucc package from github repository https://github.com/azvoleff/teamlucc
 #' ==================================================================================
 
-# Packages necessarios
+#' Packages necessarios
 kpacks <- c("raster", "sp", "rgdal", 'rgeos')
 new.packs <- kpacks[!(kpacks %in% installed.packages()[ ,"Package"])]
 if(length(new.packs)) install.packages(new.packs)
@@ -22,21 +22,21 @@ lapply(kpacks, require, character.only=T)
 remove(kpacks, new.packs)
 
 sessionInfo() # basics of used session
-# R version 3.0.2 (2013-09-25)
-# [1] rgeos_0.3-3   rgdal_0.8-16  raster_2.2-16 sp_1.0-14
+# R version 3.1.0 (2014-04-10) -- "Spring Dance"
+# rgeos_0.3-6  rgdal_0.8-16 raster_2.3-0 sp_1.0-15
 
 #' Folders --------------------------------------------------------------------------
 #'# Adjust for Local work paths
-dir.work <- 'mfolder' # Alterar para Disco Local
+dir.work <- 'S:/Raster/Landsat' # Alterar para Disco Local
 dir.rst   <- 'rst' # Criar no dir.work do disco local
-dir.tif <- 'tif'  # Criar no dir.work do disco local
-dir.shp <- './Shapefiles_StudySite'
-dir.aster <- './aster' # Alterar para o Local Folder
-dir.srtm <- '/.srtm' # Alterar para o Local Folder
+dir.tif <- '/tif'  # Criar no dir.work do disco local
+dir.shp <- 'D:/Dropbox/Kumbira2010/SIG/Vetor/Shapefiles_StudySite'
+dir.aster <- 'S:/Raster/AsterGDEM/Angola' # Alterar para o Local Folder
+dir.srtm <- 'S:/Raster/SRTM90m/Angola' # Alterar para o Local Folder
 ### Data das Landsat. Define as many as necesary.
 ### dir.fun must be changed for all analysis
 
-dir.landsat <- 'LC81810682014157LGN00' # Folder with Landast 8 TIF files
+dir.landsat <- 'LC81810682014237LGN00' # Folder with Landast 8 TIF files
 #' Satelite parameters and data ----------------------------------------------------
 ## All subsequente analysis is for a single date
 dir.fun <- dir.landsat # Change here to perform all subsequent analysis!
@@ -63,23 +63,26 @@ mtl[grep("LANDSAT_SCENE_ID", mtl$GROUP), 2]
 
 #' Local parameters ----------------------------------------------------------------
 #'# Projections
-#p.utm28n <- CRS("+init=epsg:32628") # UTM 28N Landsat Images
+#'# Pick the EPSG code for projection parameters definition.
+#'# oficial repository of EPSG at http://www.epsg-registry.org/
+#'# other source of info at http://spatialreference.org/
+p.utm28n <- CRS("+init=epsg:32628") # UTM 28N Landsat Images
 p.utm33n <- CRS("+init=epsg:32633") # UTM 33N Landsat Images
 p.utm33s <- CRS("+init=epsg:32733") # UTM 33S Landsat Images
 p.wgs84 <- CRS("+init=epsg:4326") # WGS84 Long Lat
 
-#' Study site frame extent ----------------------------------------------------------
-#'## Create rectangular area for image cropping
-#'## A projected spatialpolydf will be created and projected to utm33N
-ae <- readOGR(dsn = file.path(dir.shp), layer = 'layername')
-proj4string(ae) <- p.utm33s # Asign projection WGS84
+#' Study site frame extent ---------------------------------------------------------
+#'# Create rectangular area for image cropping
+#'# A projected spatialpolydf will be created and projected to utm33N
+ae <- readOGR(dsn = file.path(dir.shp), layer = 'studyarea2014_utm33s')
+proj4string(ae) <- p.utm33s # Asign projection
 if(!is.projected(ae)) ae <- spTransform(ae, p.utm33n)
 ae <- spTransform(ae, p.utm33n) # if UTM projection is South
-#'## Create Extent from ae or provide another Shape for a different extent 
+#'# Create Extent from ae or provide another Shape for a different extent 
 roi <- extent(ae) # a rectangular area covering ae polygon extent
 
-#'---------------TEST ONLY ---------------------------
-#'## Smaller subarea of ROI for test purposes --------
+#'--- TEST ONLY --------------------------------------------------------------------
+#'# Smaller subarea of ROI for test purposes --------
 roi2 <- as(roi - c(3000, 7000), 'SpatialPolygons')
 proj4string(roi2) <- p.utm33n
 ae2 <- gIntersection(ae, roi2, byid = TRUE)
@@ -89,10 +92,9 @@ roimoco <- extent(c(15.15, 15.18, -12.45, -12.40))
 moco <- as(roimoco, 'SpatialPolygons')
 proj4string(moco) <- p.wgs84 # Asign projection WGS84
 mocoutm <- spTransform(moco, p.utm33n)
-#'# --------------------------------------------------
-#'----------------------------------------------------
+#'----------------------------------------------------------------------------------
 
-#' Build Mask Raster used to crop images to ROI area --------------------------------
+#' Build Mask Raster used to crop images to ROI area -------------------------------
 #'# Mask file must be created. It is a mandatory step of the process
 #'# considering the way it was setup
 #'## 1st: Read a single Band to get the desired extent based on satellite images
@@ -102,9 +104,9 @@ f.CreateRoiMask <- function(x = x, roi = roi2, maskpoly = ae2){
             ignore.case = TRUE, value = TRUE)[1] 
   i.band <- raster(file.path(dir.work, dir.fun, x),
                    package = "raster")
-  #dataType(band) # Must be INT2U for Landsat 8. Range of Values: 0 to 65534
+  ##dataType(band) # Must be INT2U for Landsat 8. Range of Values: 0 to 65534
   stopifnot(!is.na(i.band@crs)) # Check projection
-  # Create Extent object from ae shapefile
+  ## Create Extent object from ae shapefile
   if(is.null(roi)){
     i.roi <- extent(ae2)
   } else i.roi <- extent(roi)
@@ -114,7 +116,7 @@ f.CreateRoiMask <- function(x = x, roi = roi2, maskpoly = ae2){
   ae.r <- i.bandae # Raster AE: resolucao 30m (Landast)
   ae.r[] <- 1 # Defalt value
   ## Overlay AE poly to AE Extent raster
-  ### Mask will have 1 and NA values
+  ## Mask will have 1 and NA values
   msk.ae <- mask(ae.r, maskpoly, updatevalue=NA)
   #dataType(mask_ae) <- "INT1U" 
   ## Evaluate rasters
@@ -214,14 +216,13 @@ f.ToarL8 <- function(x=x, i=i){
   i.toa
 }
 
-#'# for test purpose only. Do not run outside main function
+#'# for TEST purpose only. Do not run outside main function
 i.toa <- f.ToarL8(x=i.crop, i=bands[i])
 plot(i.toa)
 
 #' Topographic correction -----------------------------------------------------------
 # Lu et al 2008. Pixel-based Minnaert Correction..
 # Vanonckelen et al 2013. The effect of atmospheric and topographic...
-
 f.TopoCor <- function(x = x, i = i, method = 'minnaert',
                       slope, aspect, il.ae, sun.e, sun.z, sun.a) {
   message('Images will be corrected to planetary TOA reflectances')
@@ -264,7 +265,7 @@ f.TopoCor <- function(x = x, i = i, method = 'minnaert',
   xout
 }
 
-#'# for test purpose only. Do not run outside main function
+#'# for TEST purpose only. Do not run outside main function
 ltest <- f.TopoCor(x = i.crop, i = 1, method = 'minnaert') # Test only
 
 # ----------------------------------------------------------------------------------
@@ -277,7 +278,7 @@ ltest <- f.TopoCor(x = i.crop, i = 1, method = 'minnaert') # Test only
 ### Resulting in a 1/NA rasterLayer.
 ## dem: rasterStack with DEM, slope and aspect layers.
 
-f.idrisidata <- function(write = F, demcorr = 'none', mask = T,
+f.l8data <- function(write = F, demcorr = 'none', mask = T,
                          dem = dem.ae, wrformat = 'RST') {
   i.allfiles <- list.files(file.path(dir.work, dir.fun), all.files = F)
   # List of TIF files at dir.fun folder
@@ -350,7 +351,7 @@ f.idrisidata <- function(write = F, demcorr = 'none', mask = T,
 }
 
 # RUN function to get rasterStack with processed bands -----------------------------
-l8files <- f.idrisidata(write = T, wrformat = 'ENVI', demcorr = 'minnaert', mask = T)
+l8files <- f.l8data(write = T, wrformat = 'ENVI', demcorr = 'minnaert', mask = T)
 
 # Export rasterStack to a BSQ TIF File
 writeRaster(l8files, filename=file.path(dir.work, dir.landsat, dir.tif,
