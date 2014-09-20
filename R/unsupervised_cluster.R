@@ -120,7 +120,7 @@ f.Kmeans <- function(x = x, ncl = num.clss, niter.max = 5, nstarts = 5){
 #'# classes = num.clss
 num.clss <- 6
 ikmeans <- f.Kmeans(x = stkfile, ncl = num.clss,
-                           niter.max = 100, nstarts = 200)
+                           niter.max = 100, nstarts = 500)
 plot(ikmeans)
 writeRaster(ikmeans, file.path(dir.work, dir.landsat, dir.tif,
                                       paste0('ikmeans', num.clss,'kumbira','.rst')),
