@@ -3,16 +3,17 @@
 #'# considering the way it was setup
 #'## 1st: Read a single Band to get the desired extent based on satellite images
 #'## Change function arguments for the ROI and polygon to apply mask
-f.CreateRoiMask <- function(x = x, roi = roi2, maskpoly = ae2){
+f.CreateRoiMask <- function(roi = roi, maskpoly = ae, maskvalue = NA){
   x <- grep(".tif$", list.files(file.path(dir.work, dir.fun), all.files = F),
             ignore.case = TRUE, value = TRUE)[1] 
   i.band <- raster(file.path(dir.work, dir.fun, x),
                    package = "raster")
   ##dataType(band) # Must be INT2U for Landsat 8. Range of Values: 0 to 65534
-  stopifnot(!is.na(i.band@crs)) # Check projection
+  stopifnot(!is.na(i.band@crs)) # Check raster for a projection
+  stopifnot(!is.na(proj4string(maskpoly))) # Check polyg for a projection
   ## Create Extent object from ae shapefile
   if(is.null(roi)){
-    i.roi <- extent(ae2)
+    i.roi <- extent(maskpoly)
   } else i.roi <- extent(roi)
   # Crop Landsat Scene to AE extent
   i.bandae <- crop(i.band, i.roi) # Crop band to AE Extent
@@ -27,3 +28,10 @@ f.CreateRoiMask <- function(x = x, roi = roi2, maskpoly = ae2){
   stopifnot(compareRaster(msk.ae, i.bandae)) 
   msk.ae
 }
+
+mask_ae <- f.CreateRoiMask(roi = roi, maskpoly = ae, maskvalue = NA)
+
+plot(mask_ae); summary(mask_ae)
+writeRaster(mask.ae, filename = file.path(dir.work, dir.landsat, dir.tif,
+                                          "mask_ae.asc"),
+            overwrite = T)

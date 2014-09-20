@@ -25,9 +25,8 @@
 
 #' ADD Vegetation Index -------------------------------------------------------------
 #' x: stack object, Default will be the l8files object, with bands 1 to 7
-f.VegIndex <- function(x = x, index = 'ndvi'){
-  x <- x
-  #istk <- x[[1:7]]
+f.VegIndex <- function(stk = stk, index = 'ndvi'){
+  #istk <- stk[[1:7]]
   # Vegetation Index (Lansdat 8 OLI)
   ## NDVI = (5-4)/(5+4)
   ## LSWI = (5-6)/(5+6)
@@ -37,31 +36,32 @@ f.VegIndex <- function(x = x, index = 'ndvi'){
   if (is.na(index)) stop("invalid vegetation index")
   if (index == -1) stop("ambiguous index")
   if(index == 1) {
-    out.ind <- (x[[5]]-x[[4]])/(x[[5]]+x[[4]])
+    out.ind <- (stk$b5_ae - stk$b4_ae)/(stk$b5_ae + stk$b4_ae)
   } else if(index == 2){
-    out.ind <- (x[[5]]-x[[6]])/(x[[5]]+x[[6]])
+    out.ind <- (stk$b5_ae-stk$b6_ae)/(stk$b5_ae+stk$b6_ae)
   } else if(index == 3){
-    out.ind <- (x[[5]]-x[[7]])/(x[[5]]+x[[7]])      
+    out.ind <- (stk$b5_ae-stk$b7_ae)/(stk$b5_ae+stk$b7_ae)      
   }
   out.ind
 }
 
 #' Specify sensible and meaningful object names
-vegind <- f.VegIndex(x = l8files, index = 'ndvi') # stack Bands + VegIndex
-vegind2 <- f.VegIndex(x = l830_01_2014bija, index = 'ndvi') # stack Bands + VegIndex
-vegind_dif <- vegind30_01_2014bij - vegind03_05_2013bij
+vegindmar2014 <- f.VegIndex(stk = stktoar_mskmar2014, index = 'ndvi') # stack Bands + VegIndex
+vegindnov2013 <- f.VegIndex(stk = stktoar_msk, index = 'ndvi') # stack Bands + VegIndex
+vegind_dif <- vegindmar2014 - vegindnov2013
 
 plot(vegind_dif)
-plot(vegind)
+plot(vegind1)
 
 ## Export Vegetation Index ---------------------------------------------------------
 ## 30-01-2014
-writeRaster(vegind_dif_bij, file.path(dir.work, dir.tif30012014, dir.rst,
-                                      paste0('ndvibij2014-2013.rst')),
+writeRaster(vegind1, file.path(dir.work, dir.landsat, dir.tif,
+                               'ndvi.rst'),
             datatype = 'FLT4S', format = 'RST',
             overwrite = TRUE, NAflag = -999)
-writeRaster(vegind_dif_bij, file.path(dir.work, dir.tif30012014, dir.rst,
-                                      paste0('ndvi2013_2014_2')),
+writeRaster(vegind_dif,
+            file.path(dir.work, dir.landsat, dir.tif,
+                      paste0('ndvi2014_2013_2')),
             datatype = 'FLT4S', format = 'RST',
             overwrite = TRUE, NAflag = -999)
 
@@ -74,34 +74,10 @@ writeRaster(vegind03_05_2013, file.path(dir.work, dir.tif03052013, dir.rst,
 #' Build Stacks ---------------------------------------------------------------------
 #' Replace NA's with a small real number to run kmeans.
 ## l8files (1,2,3,4,5,6,7) #
-stkfile <- l8files # Sem NDVI
+stk_kmeans <- stktoar_mskmar2014 # Sem Veg Index
+stk_kmeans <- addLayer(stk_kmeans, vegind_dif)
 #stk20140214s <- raster::scale(stk20140214)
-stkfile <-  reclassify(stkfile, matrix(c(NA, -0.01), nrow = 1))
-
-## Com NDVI
-stk30_01_2014 <- l830_01_2014[[2:7]]
-stk30_01_2014 <- addLayer(stk30_01_2014, vegind_dif)
-stk30_01_2014 <- raster::scale(stk30_01_2014)
-stk30_01_2014 <-  reclassify(stk30_01_2014, cbind(NA, NA, -99))
-
-# PCA on Bands 1:6 and retain first 3 Components with > 99% expl var ---------------
-f.Pca <- function(x=x, cor = F){
-  xdf <- as.data.frame(x)
-  pca1 <-  princomp(xdf, cor=cor) 
-  pcastk <- stack()
-  for(i in 1:3){
-    pcax <- matrix(pca1$scores[ ,i], nrow = nrow(x), ncol = ncol(x),
-                   byrow = TRUE)
-    pcax <- raster(pcax, xmn=x@extent@xmin, ymn=x@extent@ymin,
-                   xmx=x@extent@xmax, ymx=x@extent@ymax,
-                   crs = CRS(proj4string(mask.ae)))
-    pcastk <- addLayer(pcastk, pcax)
-  }
-  pcastk
-}
-#'# Provide the stack object for analysis
-stkpca <- f.Pca(x=stackobject, cor = F)
-plot(stkpca)
+stk_kmeans <-  reclassify(stk_kmeans, matrix(c(NA, -0.01), nrow = 1))
 
 #' base::kmeans ---------------------------------------------------------------------
 f.Kmeans <- function(x = x, ncl = num.clss, niter.max = 5, nstarts = 5){
@@ -112,20 +88,21 @@ f.Kmeans <- function(x = x, ncl = num.clss, niter.max = 5, nstarts = 5){
                  byrow = TRUE)
   i.kraster <- raster(il8m, xmn=x@extent@xmin, ymn=x@extent@ymin,
                       xmx=x@extent@xmax, ymx=x@extent@ymax,
-                      crs = CRS(proj4string(mask.ae)))
+                      crs = CRS(proj4string(mask_ae)))
   i.kraster
 }
 
 #' Run kmeans function of selected stack object: create a ikmeans raster file with
 #'# classes = num.clss
-num.clss <- 6
-ikmeans <- f.Kmeans(x = stkfile, ncl = num.clss,
-                           niter.max = 100, nstarts = 200)
+num.clss <- 17
+ikmeans <- f.Kmeans(x = stkpca, ncl = num.clss, niter.max = 25, nstarts = 25)
 plot(ikmeans)
 writeRaster(ikmeans, file.path(dir.work, dir.landsat, dir.tif,
-                                      paste0('ikmeans', num.clss,'kumbira','.rst')),
+                               paste0('ikmeans', num.clss,'_pnjvp_pca_vegdig','.rst')),
             datatype = 'FLT4S', format = 'RST',
             overwrite = TRUE, NAflag = -9999)
+
+write.table(freq(ikmeans), file = 'clipboard', sep = '\t')
 
 # Flexcluster based on neural gas algorithm ----------------------------------------
 f.NgasKmeans <- function(x = x, ncl = num.clss){
@@ -146,4 +123,8 @@ writeRaster(ngkmeanspca20140214, file.path(dir.work, dir.landsat, dir.rst,
                                            paste0('ngkmeans20140214ae_', num.clss,'.rst')),
             datatype = 'FLT4S', format = 'RST',
             overwrite = TRUE, NAflag = -9999)
-            
+
+
+# Paralell
+beginCluster()
+endCluster()

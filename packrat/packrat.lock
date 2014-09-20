@@ -1,0 +1,119 @@
+PackratFormat: 1.4
+PackratVersion: 0.4.0.12
+RVersion: 3.1.1
+Repos: CRAN=http://cran.rstudio.com,
+    CRANextra=http://www.stats.ox.ac.uk/pub/RWin
+
+Package: assertthat
+Source: CRAN
+Version: 0.1
+Hash: 4b419cfdc33a3019a7f3c6f0cdea6c38
+
+Package: BH
+Source: CRAN
+Version: 1.54.0-4
+Hash: 240790420ebcf7321eed885d421a8335
+
+Package: dplyr
+Source: CRAN
+Version: 0.2
+Hash: 4c509621a9a1d5e070f2e6807f228711
+Requires: assertthat, BH, hflights, Lahman, magrittr, Rcpp
+
+Package: emplik
+Source: CRAN
+Version: 0.9-9-6
+Hash: ec53ab00a5097b6e93afc81bb2ae0013
+Requires: quantreg
+
+Package: glmc
+Source: CRAN
+Version: 0.2-4
+Hash: 640e87a4048c83b06c82e7b253f08699
+Requires: emplik
+
+Package: hflights
+Source: CRAN
+Version: 0.1
+Hash: c695268ebb08ef39e7bf4909e667406c
+
+Package: Lahman
+Source: CRAN
+Version: 3.0-1
+Hash: 01ed6aeccc6eda186d88f2bb2cab37e6
+
+Package: lattice
+Source: CRAN
+Version: 0.20-29
+Hash: 17e9fe582d11197544a5ec817a80b21e
+
+Package: magrittr
+Source: CRAN
+Version: 1.0.1
+Hash: 576e5bf21e3801499cebc27af6ad1627
+
+Package: packrat
+Source: github
+Version: 0.4.0.12
+Hash: e738f79a22521c57fad67a1679302385973cd958
+GithubRepo: packrat
+GithubUsername: rstudio
+GithubRef: v0.98.1000
+GithubSha1: e738f79a22521c57fad67a1679302385973cd958
+
+Package: plyr
+Source: CRAN
+Version: 1.8.1
+Hash: be21bad411e628f810a92212e17b5be7
+Requires: Rcpp
+
+Package: quantreg
+Source: CRAN
+Version: 5.05
+Hash: b747a8a729600804a034209edffd648e
+Requires: SparseM
+
+Package: raster
+Source: CRAN
+Version: 2.3-0
+Hash: 52e83a33314741a0d2b3d50be6dc2a45
+Requires: sp
+
+Package: Rcpp
+Source: CRAN
+Version: 0.11.2
+Hash: ef2b1a5e45d1461bd720e4ebbe48e601
+
+Package: reshape2
+Source: CRAN
+Version: 1.4
+Hash: b210925e978fd52ad5eb0822a353e7ce
+Requires: plyr, Rcpp, stringr
+
+Package: rgdal
+Source: CRAN
+Version: 0.9-1
+Hash: bcdc532e25febc0f95960a7a9fce4048
+Requires: sp
+
+Package: rgeos
+Source: CRAN
+Version: 0.3-8
+Hash: ab575b135d32a389ff23c6d364a5bae0
+Requires: sp
+
+Package: sp
+Source: CRAN
+Version: 1.0-15
+Hash: ccab055c2835c81a8add23517d8b6219
+Requires: lattice
+
+Package: SparseM
+Source: CRAN
+Version: 1.05
+Hash: 5d765178585bca7f089223ce688e7abc
+
+Package: stringr
+Source: CRAN
+Version: 0.6.2
+Hash: cdde0cfa0f52cffeaca23a11a3899779
