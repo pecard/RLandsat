@@ -94,8 +94,14 @@ f.Kmeans <- function(x = x, ncl = num.clss, niter.max = 5, nstarts = 5){
 
 #' Run kmeans function of selected stack object: create a ikmeans raster file with
 #'# classes = num.clss
+<<<<<<< HEAD
 num.clss <- 17
 ikmeans <- f.Kmeans(x = stkpca, ncl = num.clss, niter.max = 25, nstarts = 25)
+=======
+num.clss <- 6
+ikmeans <- f.Kmeans(x = stkfile, ncl = num.clss,
+                           niter.max = 100, nstarts = 500)
+>>>>>>> 62725d2043b482c4d0c87a2d510173e656e22c70
 plot(ikmeans)
 writeRaster(ikmeans, file.path(dir.work, dir.landsat, dir.tif,
                                paste0('ikmeans', num.clss,'_pnjvp_pca_vegdig','.rst')),
