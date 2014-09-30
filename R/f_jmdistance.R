@@ -1,6 +1,8 @@
 #' Jeffries-Matusita distance - JM Separability Index
-#' Follows the contribution of jlhoward in SO
-#' http://stackoverflow.com/a/24763982/640783
+#'# Follows the contribution of jlhoward in SO
+#'# http://stackoverflow.com/a/24763982/640783
+#'# with the function from Richards and Jia 2006
+#'
 f_jmdist <- function (sig1 , sig2) {
   # this function adapted from: 
   # http://stats.stackexchange.com/questions/78849/measure-for-separability

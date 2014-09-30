@@ -1,4 +1,6 @@
 #' Apply ROI crop to DOS1 bands
+#' Song et al 2000: DOS1 Works just fine for land change detection
+#' 
 f.stkDOS1 <- function(roi = roi){
   bands <- list.files(file.path(dir.work, dir.fun), full.names = T,
                       pattern = '.TIF$')  

@@ -67,6 +67,11 @@ Version: 1.8.1
 Hash: be21bad411e628f810a92212e17b5be7
 Requires: Rcpp
 
+Package: proxy
+Source: CRAN
+Version: 0.4-13
+Hash: feb935e0bf1fed88f30cb793653b5b41
+
 Package: quantreg
 Source: CRAN
 Version: 5.05
