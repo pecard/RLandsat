@@ -10,5 +10,6 @@ Scripts include:
 - Topographic and Atmospheric correction using SRTM or ASTER GDEM
 - Unsupervised (cluster) classification
 - Signature development and simple "purify" aproach
+- Calculate Separability Index based on Jeffries-Matusita Distance
 - Supervised classification with Random Forest and Structure Vector Machine
 
