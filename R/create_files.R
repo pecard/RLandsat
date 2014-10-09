@@ -36,10 +36,15 @@ dir.userdem <- '..' # Alterar para o Local Folder
 ### Data das Landsat. Define as many as necesary.
 ### dir.fun must be changed for all analysis
 
+#' Kumbira
+dir.landsat <- 'LC81810682014157LGN00' # Folder with Landast 8 TIF files
+dir.fun <- dir.landsat # Change here to perform all subsequent analysis!
+
 #' Chacheu 2014 e 2013-12-29
 dir.landsat <- 'LC82040522014142LGN00/qgis' # Folder with Landast 8 TIF files
 dir.landsat <- 'LC82040522013363LGN00' # 2013-12-29
 dir.shp <- 'S:/Bissau/Cacheu/vetor'
+dir.shp <- 'D:/Dropbox/Kumbira2010/SIG/Vetor/Shapefiles_StudySite'
 
 # Bijagos 2014-03-19
 dir.landsat <- 'LC82040522014078LGN00/qgis/dos1' # Folder with Landast 8 TIF files
@@ -89,6 +94,7 @@ p.wgs84 <- CRS("+init=epsg:4326") # WGS84 Long Lat
 #' Study site frame extent ---------------------------------------------------------
 #'# Create rectangular area for image cropping
 #'# A projected spatialpolydf will be created and projected to utm33N
+ae <- readOGR(dsn = file.path(dir.shp), layer = 'Study_AreaRT')
 ae <- readOGR(dsn = file.path(dir.shp), layer = 'Cacheu_gadm')
 ae <- readOGR(dsn = file.path(dir.shp), layer = 'mangal_cacheu')
 ae <- readOGR(dsn = file.path(dir.shp), layer = 'GNB_Bijagos200mUTM28S')
@@ -96,20 +102,19 @@ proj4string(ae) <- p.utm28s
 #proj4string(ae) <- p.wgs84 # Asign projection
 #if(!is.projected(ae)) ae <- spTransform(ae, p.utm28n)
 #'# if UTM projection is South
-ae <- spTransform(ae, p.utm28n) 
+ae <- spTransform(ae, p.utm33n) 
 #'# Create Extent from ae or provide another Shape for a different extent 
 roi <- extent(ae) # a rectangular area covering ae polygon extent
 
-<<<<<<< HEAD
+
 #'# CREATE MASK ---------------------------------------------------------------------
 =======
-<<<<<<< HEAD
+
 #'--- TEST ONLY --------------------------------------------------------------------
 #'# Smaller subarea of ROI for test purposes --------
 =======
 #'---------------TEST ONLY ----------------------------
 #'## Smaller subarea of ROI for test purposes ---------
->>>>>>> e37a834a72ab08633877dd5970fe9368964fb982
 roi2 <- as(roi - c(3000, 7000), 'SpatialPolygons')
 proj4string(roi2) <- p.utm33n
 ae2 <- gIntersection(ae, roi2, byid = TRUE)

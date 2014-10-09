@@ -6,5 +6,5 @@ f.applmask <- function(stk = stk, mask = mask){
   stk_mask
 }
 
-stktoar_mskmar2014 <- f.applmask(stk = stk_dos1mar2014, mask = mask_ae)
-stktoar_msk <- f.applmask(stk = stk_dos1, mask = mask_ae)
+stk_mask <- f.applmask(stk = stk_topoc, mask = mask_ae)
+plot(stk_mask)

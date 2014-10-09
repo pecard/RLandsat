@@ -80,37 +80,33 @@ stk_kmeans <- addLayer(stk_kmeans, vegind_dif)
 stk_kmeans <-  reclassify(stk_kmeans, matrix(c(NA, -0.01), nrow = 1))
 
 #' base::kmeans ---------------------------------------------------------------------
-f.Kmeans <- function(x = x, ncl = num.clss, niter.max = 5, nstarts = 5){
-  xdf <- as.data.frame(x)
+f.Kmeans <- function(stk = stk, ncl = num.clss, niter.max = 5, nstarts = 5){
+  xdf <- as.data.frame(stk)
   #xdf <- scale(xdf)
   ikm <- kmeans(xdf, ncl, iter.max = niter.max, nstart = nstarts)
-  il8m <- matrix(ikm$cluster, nrow = nrow(x), ncol = ncol(x),
+  il8m <- matrix(ikm$cluster, nrow = nrow(stk), ncol = ncol(stk),
                  byrow = TRUE)
-  i.kraster <- raster(il8m, xmn=x@extent@xmin, ymn=x@extent@ymin,
-                      xmx=x@extent@xmax, ymx=x@extent@ymax,
+  i.kraster <- raster(il8m, xmn=stk@extent@xmin, ymn=stk@extent@ymin,
+                      xmx=stk@extent@xmax, ymx=stk@extent@ymax,
                       crs = CRS(proj4string(mask_ae)))
   i.kraster
 }
 
 #' Run kmeans function of selected stack object: create a ikmeans raster file with
 #'# classes = num.clss
-<<<<<<< HEAD
-num.clss <- 17
-ikmeans <- f.Kmeans(x = stkpca, ncl = num.clss, niter.max = 25, nstarts = 25)
-=======
-num.clss <- 6
-ikmeans <- f.Kmeans(x = stkfile, ncl = num.clss,
-                           niter.max = 100, nstarts = 500)
->>>>>>> 62725d2043b482c4d0c87a2d510173e656e22c70
+num.clss <- 8
+ikmeans <- f.Kmeans(stk = stk_pca, ncl = num.clss, niter.max = 15, nstarts = 15)
 plot(ikmeans)
+
+#' Export resulting kmeans rasterLayer
 writeRaster(ikmeans, file.path(dir.work, dir.landsat, dir.tif,
-                               paste0('ikmeans', num.clss,'_pnjvp_pca_vegdig','.rst')),
+                               paste0('ikmeans', num.clss,'_pca3_v2','.rst')),
             datatype = 'FLT4S', format = 'RST',
             overwrite = TRUE, NAflag = -9999)
 
 write.table(freq(ikmeans), file = 'clipboard', sep = '\t')
 
-# Flexcluster based on neural gas algorithm ----------------------------------------
+#' Flexcluster based on neural gas algorithm ----------------------------------------
 f.NgasKmeans <- function(x = x, ncl = num.clss){
   xdf <- as.data.frame(x)
   #xdf <- scale(xdf)

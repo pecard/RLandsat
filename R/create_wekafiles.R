@@ -14,22 +14,24 @@ roi <- extent(c(358977, 368475, 1360958, 1370051))
 stkroi <- crop(stkDOS1, roi)
 plot(stkroi)
 
-write.arff(as.matrix(stkroi),
-           file = paste0("S:/Raster/Landsat/LC82040522014078LGN00/qgis/dos1/rst/",
-                         'b1-7.arff'))
+foreign::write.arff(as.matrix(stk_mask),
+           file = file.path(dir.work, dir.landsat, dir.tif,
+                            'weka_stk_mask.arff'))
 
-k12 <- read.arff(paste0("S:/Raster/Landsat/LC82040522014078LGN00/qgis/dos1/rst/",
-                        'kmeans12.arff'))
+datafrom_weka <- foreign::read.arff(file.path(dir.work, dir.landsat, dir.tif,
+                                    'xmeans_1-7b.arff'))
 
-mclust <- matrix(as.numeric(k12$Cluster), nrow = nrow(stkroi), ncol = ncol(stkroi),
+mclust <- matrix(as.numeric(datafrom_weka$Cluster),
+                 nrow = nrow(stk_pca),
+                 ncol = ncol(stk_pca),
                  byrow = TRUE)
-rclust <- raster(mclust, xmn = stkroi@extent@xmin, ymn = stkroi@extent@ymin,
-                 xmx = stkroi@extent@xmax, ymx = stkroi@extent@ymax,
-                 crs = CRS(proj4string(stkroi)))
+rclust <- raster(mclust, xmn = stk_pca@extent@xmin, ymn = stk_pca@extent@ymin,
+                 xmx = stk_pca@extent@xmax, ymx = stk_pca@extent@ymax,
+                 crs = CRS(proj4string(stk_pca)))
 plot(rclust)
 
 writeRaster(rclust,
-            filename = file.path('S:/Raster/Landsat/LC82040522014078LGN00/qgis/dos1/rst',
-                                 'k12.rst'),
+            filename = file.path(dir.work, dir.landsat, dir.tif,
+                                 'weka_6xmeans_1-7b.rst'),
             format = 'RST',
             overwrite = TRUE)

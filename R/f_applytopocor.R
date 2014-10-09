@@ -1,81 +1,83 @@
-# ----------------------------------------------------------------------------------
-# Main Function to create radiometric corrected Files ------------------------------
-# For original Landsat Product only
-# Function arguments:
-## write: (TRUE/FALSE): Export RST raster file
-## demcorr: ('none', cosine, ccorrection, minnaert). Topographic correction algorithm 
-## mask: (TRUE/FALSE) Aply a mask to the ROI extent. Mask will be a polygon.
-### Resulting in a 1/NA rasterLayer.
-## dem: rasterStack with DEM, slope and aspect layers.
+#' ----------------------------------------------------------------------------------
+#' Main Function to create radiometric corrected Files
+#' For original Landsat Product only
+#' Function arguments:
+#' write: (TRUE/FALSE): Export RST raster file
+#' demcorr: ('none', cosine, ccorrection, minnaert). Topographic correction algorithm 
+#' mask: (TRUE/FALSE) Aply a mask to the ROI extent. Mask will be a polygon.
+#' Resulting in a 1/NA rasterLayer.
+#' dem: rasterStack with DEM, slope and aspect layers.
+#' Topographic correction -----------------------------------------------------------
+#' Lu et al 2008. Pixel-based Minnaert Correction..
+#' Vanonckelen et al 2013. The effect of atmospheric and topographic...
+#' Available methods: 'none', 'cosine', 'ccorrection', 'minnaert'
 
-f.topocor <- function(write = F, demcorr = 'none', mask = T,
-                     dem = dem.ae, wrformat = 'RST') {
-  i.allfiles <- list.files(file.path(dir.work, dir.fun), all.files = F)
-  # List of TIF files at dir.fun folder
-  i.listtif <- grep(".tif$", i.allfiles, ignore.case = TRUE, value = TRUE) 
-  bands <- as.numeric(substr(i.listtif, (nchar(i.listtif) - 4),
-                             (nchar(i.listtif) - 4)))
-  i.stk.toar <- stack()
-  #i.stk.toart <- stack() # topocorr
-  i.lstk <- list()
-  # SUN Parameters ---
-  ## Sun elev in radians
+f.TopoCor <- function(stk = stk, method = 'minnaert', dem = dem.ae) {
+  stk_topo <- stack()
+  METHODS <- c('none', 'cosine', 'ccorrection', 'minnaert')
+  method <- pmatch(method, METHODS)
+  #' SUN Parameters ---
+  ##' Sun elev in radians
   sun.e <- as.numeric(mtl[grep("SUN_ELEVATION", mtl$GROUP), 2]) * (pi/180) 
-  ## Sun Zenit in radians
+  ##' Sun Zenit in radians
   sun.z <- (90 - as.numeric(mtl[grep("SUN_ELEVATION", mtl$GROUP), 2])) * (pi/180)
-  ## Sun Azimuth
+  ##' Sun Azimuth
   sun.a <- as.numeric(mtl[grep("SUN_AZIMUTH", mtl$GROUP), 2])* (pi/180)
-  # DEM Parameters for Topo Correction ---
-  #  if(topocor != 'none'){
+  #' DEM Parameters for Topo Correction ---
   il.epsilon <- 1e-06
-  # DEM slope and Aspect
+  #' DEM slope and Aspect
   slope <- dem[['slope']]
   aspect <- dem[['aspect']]
   il.ae <- cos(slope) * cos(sun.z) + sin(slope) *
     sin(sun.z) * cos(sun.a - aspect)
-  # stopifnot(min(getValues(il.ae), na.rm = T) >= 0)
-  il.ae[il.ae <= 0] <- il.epsilon
-  #  }
-  for (i in 1:length(bands)) {
-    message(bands[i])
-    # Name
-    i.fname <- paste0('b',bands[i],'_ae')
-    # Read Geotif raster
-    i.tmp <- raster(file.path(dir.work, dir.fun, i.listtif[i]),
-                    package = "raster", varname = fname, dataType = 'FLT4S')
-    # Crop and apply mask
-    i.crop <- crop(i.tmp, extent(mask.ae))
-    # uncorrected TOA Reflectance with Topographic correction with mask overlay
-    i.toar <- f.TopoCor(x = i.crop, i = bands[i], method = demcorr,
-                        slope, aspect, il.ae, sun.e, sun.z, sun.a)
-    if(mask == T) {
-      i.toar <- i.toar * mask.ae
-    } else i.toar <- i.toar
-    i.toar@data@names <- i.fname  # Add band name  
-    # Create Stack
-    if(i < 8) {
-      i.stk.toar <- addLayer(i.stk.toar, i.toar)
-      #i.stk.toart <- addLayer(i.stk.toart, i.toartmsk)
+  if(method == 1){
+    message('Message: No Topo correction will be applied')
+    stk_out <- stk
+  } else if(method == 2){
+    message('Message: cosine will be applied')
+    stk_out <- stk * (cos(sun.z)/il.ae)
+  } else if (method == 3) {
+    message('Message: c_correction will be applied')
+    if (samp == 1){
+      subspl <- 1:ncell(stk[[1]])
+    } else{
+      subspl <- sample(1:ncell(stk), floor(ncell(stk)* 0.50), rep = F)}
+    for(i in 1:nlayers(stk)){      
+      bi <- stk[[i]]
+      band.lm <- lm(bi[subspl] ~ il.ae[subspl])$coefficients
+      #band.lm <- lm(as.vector(i.toa) ~ as.vector(il.ae))$coefficients
+      C <- band.lm[1]/band.lm[2]
+      xout <- bi * (cos(sun.z) + C)/(il.ae + C)
+      stk_topo <- addLayer(stk_topo, xout)
+      stk_out <- stk_topo
     }
-    # Write IDRISI raster group rgf for uncorrected TOA Reflectance
-    if(write == T) {
-      dire <- file.path(dir.work, dir.fun, dir.tif)
-      stopifnot(file_test("-d", dire))
-      ## gdal
-      ##writeGDAL(as(i.l8, "SpatialGridDataFrame"),
-      ##fname = "D:\\idri.rst", drivername = "RST") 
-      message(wrformat, 'raster will be created for ', i.fname, ' at: ',
-              file.path(dir.work, dir.fun, dir.tif))
-      writeRaster(i.toar, filename = file.path(dir.work, dir.fun, dir.tif,
-                                               i.fname),
-                  datatype = 'FLT4S', format = wrformat, #'RST',
-                  overwrite = TRUE)
-      fileConn <- file(file.path(dir.work, dir.fun, dir.tif, "ae_toar.rgf"))
-      writeLines(c(length(i.listtif),
-                   paste0('b', bands, '_ae')),
-                 fileConn)
-      close(fileConn)
+  } else if(method == 4) {
+    message('Message: Minnaert correction will be applied')
+    targetslope <- atan(0.05)
+    for(i in 1:nlayers(stk)){
+      bi <- stk[[i]]
+      if (all(bi[slope >= targetslope] < 0, na.rm = TRUE)) {
+        K <- 1
+      } else {
+        K <- data.frame(y = as.vector(bi[slope >= targetslope]), 
+                        x = as.vector(il.ae[slope >= targetslope])/cos(sun.z))
+        K <- K[!apply(K, 1, function(x) any(is.na(x))), ]
+        K <- K[K$x > 0, ]
+        K <- K[K$y > 0, ]
+        K <- lm(log10(K$y) ~ log10(K$x))
+        K <- coefficients(K)[[2]]
+        if (K > 1) 
+          K <- 1
+        if (K < 0) 
+          K <- 0
+      }
+      xout <-(bi * cos(sun.z))/((il.ae * cos(sun.z))^K)
+      stk_topo <- addLayer(stk_topo, xout)
+      stk_out <- stk_topo
     }
   }
-  i.stk.toar
+  stk_out
 }
+
+stk_topoc <- f.TopoCor(stk = stk_dos1, method = 'minnaert', dem = dem.ae) # Test only
+plot(ltest)
