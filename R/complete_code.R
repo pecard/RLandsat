@@ -47,7 +47,7 @@ dir.fun <- dir.landsat # Change here to perform all subsequent analysis!
 dir.create(file.path(dir.work, dir.fun, dir.tif))
 
 #'# Saving and Loading R data session ------------------------------------------------
-save.image(file.path(dir.work, dir.fun, paste0(dir.fun,'.RData')))
+save.image(file.path(dir.work, dir.landsat, 'fun_pack.RData'))
 load(file.path(dir.work, dir.fun, paste0(dir.fun,'.RData'))
      
      #'# Landsat 8 Scene Metadata: MTL File -----------------------------------------------

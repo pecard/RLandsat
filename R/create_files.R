@@ -17,7 +17,7 @@
 #' ==================================================================================
 
 #' Packages necessarios
-kpacks <- c("raster", "sp", "rgdal", 'rgeos', 'lattice')
+kpacks <- c("raster", "sp", "rgdal", 'rgeos')
 new.packs <- kpacks[!(kpacks %in% installed.packages()[ ,"Package"])]
 if(length(new.packs)) install.packages(new.packs)
 lapply(kpacks, require, character.only=T)
@@ -30,15 +30,14 @@ sessionInfo() # basics of used session
 #' Folders --------------------------------------------------------------------------
 #'# Adjust for Local work paths
 dir.work <- 'S:/Raster/Landsat' # Alterar para Disco Local
-dir.rst   <- 'rst' # Criar no dir.work do disco local
-dir.tif <- 'tif'  # Criar no dir.work do disco local
-dir.userdem <- '..' # Alterar para o Local Folder
+dir.geotif <- 'geotif'  # Criar no dir.work do disco local
+dir.weka <- 'weka' # Alterar para o Local Folder
 ### Data das Landsat. Define as many as necesary.
 ### dir.fun must be changed for all analysis
 
 #' Kumbira
-dir.landsat <- 'LC81810682014157LGN00' # Folder with Landast 8 TIF files
-dir.fun <- dir.landsat # Change here to perform all subsequent analysis!
+dir.landsat <- 'LC82040522014078LGN00' # Folder with Landast 8 TIF files
+dir.fun <- 'LC82040522014078LGN00/qgis/dos1' # Change here to perform all subsequent analysis!
 
 #' Chacheu 2014 e 2013-12-29
 dir.landsat <- 'LC82040522014142LGN00/qgis' # Folder with Landast 8 TIF files
@@ -48,7 +47,7 @@ dir.shp <- 'D:/Dropbox/Kumbira2010/SIG/Vetor/Shapefiles_StudySite'
 
 # Bijagos 2014-03-19
 dir.landsat <- 'LC82040522014078LGN00/qgis/dos1' # Folder with Landast 8 TIF files
-dir.shp <- 'S:/Bissau/vetor'
+dir.shp <- 'S:/Bissau/Cacheu/vetor'
 dir.fun <- dir.landsat # Change here to perform all subsequent analysis!
 
 # Bijagos 2013-11-27 LC82040522013331LGN0
@@ -64,8 +63,8 @@ dir.create(file.path(dir.work, dir.fun, dir.tif))
 dir.create(file.path(dir.work, dir.fun, dir.rst))
 
 #'# Saving and Loading R data session ------------------------------------------------
-save.image(file.path(dir.work, dir.fun, paste0(dir.fun,'.RData')))
-load(file.path(dir.work, dir.fun, paste0(dir.fun,'.RData'))
+save.image(file.path(dir.work, dir.landsat, 'fun_pack.RData'))
+load(file.path(dir.work, dir.landsat, 'fun_pack.RData'))
 
 #'# Landsat 8 Scene Metadata: MTL File -----------------------------------------------
 #'## Metadata file contains scene acquisition details and correction parameters
@@ -94,12 +93,17 @@ p.wgs84 <- CRS("+init=epsg:4326") # WGS84 Long Lat
 #' Study site frame extent ---------------------------------------------------------
 #'# Create rectangular area for image cropping
 #'# A projected spatialpolydf will be created and projected to utm33N
-ae <- readOGR(dsn = file.path(dir.shp), layer = 'Study_AreaRT')
-ae <- readOGR(dsn = file.path(dir.shp), layer = 'Cacheu_gadm')
-ae <- readOGR(dsn = file.path(dir.shp), layer = 'mangal_cacheu')
-ae <- readOGR(dsn = file.path(dir.shp), layer = 'GNB_Bijagos200mUTM28S')
-proj4string(ae) <- p.utm28s
-#proj4string(ae) <- p.wgs84 # Asign projection
+ae <- readOGR(dsn = file.path(dir.shp), layer = 'areamangais_utm28n')
+frame <- readOGR(dsn = file.path(dir.shp), layer = 'frame100km_utm28n')
+aeframe <- readOGR(dsn = file.path(dir.shp), layer = 'areamangais_frame_utm28n')
+
+#ae <- readOGR(dsn = file.path(dir.shp), layer = 'mangal_cacheu')
+#ae <- readOGR(dsn = file.path(dir.shp), layer = 'GNB_Bijagos200mUTM28S')
+proj4string(ae) <- p.utm28n
+proj4string(aeframe) <- p.utm28n
+proj4string(frame) <- p.utm28n
+
+proj4string(ae) <- p.wgs84 # Asign projection
 #if(!is.projected(ae)) ae <- spTransform(ae, p.utm28n)
 #'# if UTM projection is South
 ae <- spTransform(ae, p.utm33n) 
@@ -107,24 +111,17 @@ ae <- spTransform(ae, p.utm33n)
 roi <- extent(ae) # a rectangular area covering ae polygon extent
 
 
-#'# CREATE MASK ---------------------------------------------------------------------
-=======
+#' stack preprocessed images DOS1 (from QGIS plugin semiautomatic classification)
+#' Apply ROI crop to DOS1 bands
+#' Song et al 2000: DOS1 Works just fine for land change detection
+#' !Call substrBand function
+stk_dos1 <- f_stkDOS1(roi = frame[1, ])
 
-#'--- TEST ONLY --------------------------------------------------------------------
-#'# Smaller subarea of ROI for test purposes --------
-=======
-#'---------------TEST ONLY ----------------------------
-#'## Smaller subarea of ROI for test purposes ---------
-roi2 <- as(roi - c(3000, 7000), 'SpatialPolygons')
-proj4string(roi2) <- p.utm33n
-ae2 <- gIntersection(ae, roi2, byid = TRUE)
-plot(roi2, axes = T);plot(ae2, add = T)
-#'# Morro Moco Study Area --
-roimoco <- extent(c(15.15, 15.18, -12.45, -12.40))
-moco <- as(roimoco, 'SpatialPolygons')
-proj4string(moco) <- p.wgs84 # Asign projection WGS84
-mocoutm <- spTransform(moco, p.utm33n)
-#'----------------------------------------------------------------------------------
+#' Apply Mask to image stack
+stk_mask <- f_applmask(stk = stk_dos1, mask = mask_ae)
+
+
+#'# CREATE MASK ---------------------------------------------------------------------
 
 #' Build Mask Raster used to crop images to ROI area -------------------------------
 #'# Mask file must be created. It is a mandatory step of the process
