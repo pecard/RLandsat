@@ -25,7 +25,7 @@
 
 #' ADD Vegetation Index -------------------------------------------------------------
 #' x: stack object, Default will be the l8files object, with bands 1 to 7
-f.VegIndex <- function(stk = stk, index = 'ndvi'){
+f_vegIndex <- function(stk = stk, index = 'ndvi'){
   #istk <- stk[[1:7]]
   # Vegetation Index (Lansdat 8 OLI)
   ## NDVI = (5-4)/(5+4)
@@ -80,7 +80,7 @@ stk_kmeans <- addLayer(stk_kmeans, vegind_dif)
 stk_kmeans <-  reclassify(stk_kmeans, matrix(c(NA, -0.01), nrow = 1))
 
 #' base::kmeans ---------------------------------------------------------------------
-f.Kmeans <- function(stk = stk, ncl = num.clss, niter.max = 5, nstarts = 5){
+f_kmeans <- function(stk = stk, ncl = num.clss, niter.max = 5, nstarts = 5){
   xdf <- as.data.frame(stk)
   #xdf <- scale(xdf)
   ikm <- kmeans(xdf, ncl, iter.max = niter.max, nstart = nstarts)
@@ -107,7 +107,7 @@ writeRaster(ikmeans, file.path(dir.work, dir.landsat, dir.tif,
 write.table(freq(ikmeans), file = 'clipboard', sep = '\t')
 
 #' Flexcluster based on neural gas algorithm ----------------------------------------
-f.NgasKmeans <- function(x = x, ncl = num.clss){
+f_ngasKmeans <- function(x = x, ncl = num.clss){
   xdf <- as.data.frame(x)
   #xdf <- scale(xdf)
   ikm <- cclust(xdf, ncl, )

@@ -1,5 +1,5 @@
 # PCA on Bands 1:6 and retain first 3 Components with > 99% expl var ---------------
-f.pca <- function(stk = stk, corr = F, comps = 3){
+f_pca <- function(stk = stk, corr = F, comps = 3){
   stki <-  reclassify(stk, matrix(c(NA, -0.01), nrow = 1))  
   pcalist <- list()
   xdf <- as.data.frame(stki)

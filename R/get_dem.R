@@ -2,7 +2,7 @@
 #'## ASTGTM2_S12E014_dem.tif ASTER GDEM For Angola (Kumbira)
 #'## Read and Crop ASTER or SRTM DEM
 #'### !!! REVER resample do DEM antes de obter slope e aspect !!!
-f.ReadDEM <- function(elev = 'userdemname', unit = 'radians', roi = mask.ae,
+f_readDEM <- function(elev = 'userdemname', unit = 'radians', roi = mask.ae,
                       lon = lon, lat = lat){
   vdem <- pmatch(elev, i.dem)
   if (is.na(vdem)) 

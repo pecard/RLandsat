@@ -3,7 +3,7 @@
 #'### !!! REVER resample do DEM antes de obter slope e aspect !!!
 #'### Ensure that when using a extent object there is a mask_ae object to get proj
 #'### parameters from.
-f.getSRTMDEM <- function(unit = 'radians', roi = mask_ae, lon = lon, lat = lat){
+f_getSRTMDEM <- function(unit = 'radians', roi = mask_ae, lon = lon, lat = lat){
   i.dtm <- getData('SRTM', lon = lon, lat = lat)
   proj.i <- CRS(proj4string(roi))
   ## Extended Area for crop and reproject

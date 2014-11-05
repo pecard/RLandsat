@@ -1,6 +1,6 @@
 ## Convert DN to TOA Top of Athmosphere or Planetary Reflectances
 
-f.ToarL8 <- function(roi = roi){
+f_toarL8 <- function(roi = roi){
   toa_stk <- stack()
   bands <- list.files(file.path(dir.work, dir.fun), full.names = T, pattern = '.TIF$')  
   for (i in 1:length(bands)) {

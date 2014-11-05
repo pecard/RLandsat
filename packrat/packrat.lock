@@ -1,5 +1,5 @@
 PackratFormat: 1.4
-PackratVersion: 0.4.0.12
+PackratVersion: 0.4.1.1
 RVersion: 3.1.1
 Repos: CRAN=http://cran.rstudio.com,
     CRANextra=http://www.stats.ox.ac.uk/pub/RWin
@@ -14,11 +14,16 @@ Source: CRAN
 Version: 1.54.0-4
 Hash: 240790420ebcf7321eed885d421a8335
 
+Package: DBI
+Source: CRAN
+Version: 0.3.1
+Hash: 3a9e85b26ec3ab570266bccb3f9de055
+
 Package: dplyr
 Source: CRAN
-Version: 0.2
-Hash: 4c509621a9a1d5e070f2e6807f228711
-Requires: assertthat, BH, hflights, Lahman, magrittr, Rcpp
+Version: 0.3.0.2
+Hash: 0da1a09895f941f144446a6d57d77095
+Requires: assertthat, BH, DBI, lazyeval, magrittr, R6, Rcpp
 
 Package: emplik
 Source: CRAN
@@ -47,24 +52,25 @@ Source: CRAN
 Version: 0.20-29
 Hash: 17e9fe582d11197544a5ec817a80b21e
 
+Package: lazyeval
+Source: CRAN
+Version: 0.1.9
+Hash: 2953778d951973e2889641c06275ecf3
+
 Package: magrittr
 Source: CRAN
 Version: 1.0.1
 Hash: 576e5bf21e3801499cebc27af6ad1627
 
 Package: packrat
-Source: github
-Version: 0.4.0.12
-Hash: e738f79a22521c57fad67a1679302385973cd958
-GithubRepo: packrat
-GithubUsername: rstudio
-GithubRef: v0.98.1000
-GithubSha1: e738f79a22521c57fad67a1679302385973cd958
+Source: CRAN
+Version: 0.4.1-1
+Hash: 5716097644904b9c1b4be2692de16005
 
 Package: plyr
 Source: CRAN
 Version: 1.8.1
-Hash: be21bad411e628f810a92212e17b5be7
+Hash: 6a287219196e18bc6261dc11b41b1ca0
 Requires: Rcpp
 
 Package: proxy
@@ -78,21 +84,26 @@ Version: 5.05
 Hash: b747a8a729600804a034209edffd648e
 Requires: SparseM
 
+Package: R6
+Source: CRAN
+Version: 2.0.1
+Hash: 9a3ac4e5fd8059af0fc5156bcb019bbc
+
 Package: raster
 Source: CRAN
-Version: 2.3-0
-Hash: 52e83a33314741a0d2b3d50be6dc2a45
+Version: 2.3-12
+Hash: b84f479bf59fd3ed66553827b3f8c497
 Requires: sp
 
 Package: Rcpp
 Source: CRAN
-Version: 0.11.2
-Hash: ef2b1a5e45d1461bd720e4ebbe48e601
+Version: 0.11.3
+Hash: d9cc0a13885961b2d004cf73b0fb68dd
 
 Package: reshape2
 Source: CRAN
 Version: 1.4
-Hash: b210925e978fd52ad5eb0822a353e7ce
+Hash: e50809918ebb73dff47de17d36d12975
 Requires: plyr, Rcpp, stringr
 
 Package: rgdal
@@ -106,6 +117,23 @@ Source: CRAN
 Version: 0.3-8
 Hash: ab575b135d32a389ff23c6d364a5bae0
 Requires: sp
+
+Package: rJava
+Source: CRAN
+Version: 0.9-6
+Hash: 5ea21341e7c1d6a40cdde6ef470fec92
+
+Package: RWeka
+Source: CRAN
+Version: 0.4-23
+Hash: 620c63ec825f30b07925377eac7c9246
+Requires: rJava, RWekajars
+
+Package: RWekajars
+Source: CRAN
+Version: 3.7.11-1
+Hash: 034b6348d37c8d1d0637107490f30623
+Requires: rJava
 
 Package: sp
 Source: CRAN

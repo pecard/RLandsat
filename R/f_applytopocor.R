@@ -12,7 +12,7 @@
 #' Vanonckelen et al 2013. The effect of atmospheric and topographic...
 #' Available methods: 'none', 'cosine', 'ccorrection', 'minnaert'
 
-f.TopoCor <- function(stk = stk, method = 'minnaert', dem = dem.ae) {
+f_topoCor <- function(stk = stk, method = 'minnaert', dem = dem.ae) {
   stk_topo <- stack()
   METHODS <- c('none', 'cosine', 'ccorrection', 'minnaert')
   method <- pmatch(method, METHODS)

@@ -15,11 +15,18 @@ stkroi <- crop(stkDOS1, roi)
 plot(stkroi)
 
 foreign::write.arff(as.matrix(stk_mask),
-           file = file.path(dir.work, dir.landsat, dir.tif,
-                            'weka_stk_mask.arff'))
+                    file = file.path(dir.work, dir.landsat, 'weka',
+                                     'b1_7_weka_stk_mask.arff'))
+
+raster::writeRaster(stk_mask, file = file.path(dir.work, dir.landsat, 'geotif',
+                                               'b1_7_stk_mask.tif'),
+                    Format = 'GTiff')
+raster::writeRaster(stk_dos1, file = file.path(dir.work, dir.landsat, 'geotif',
+                                               'b1_7_stk_dos1.tif'),
+                    Format = 'GTiff')
 
 datafrom_weka <- foreign::read.arff(file.path(dir.work, dir.landsat, dir.tif,
-                                    'xmeans_1-7b.arff'))
+                                              'xmeans_1-7b.arff'))
 
 mclust <- matrix(as.numeric(datafrom_weka$Cluster),
                  nrow = nrow(stk_pca),

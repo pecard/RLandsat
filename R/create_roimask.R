@@ -3,35 +3,41 @@
 #'# considering the way it was setup
 #'## 1st: Read a single Band to get the desired extent based on satellite images
 #'## Change function arguments for the ROI and polygon to apply mask
-f.CreateRoiMask <- function(roi = roi, maskpoly = ae, maskvalue = NA){
+f_createRoiMask <- function(maskpoly = ae, maskvalue = NA){
   x <- grep(".tif$", list.files(file.path(dir.work, dir.fun), all.files = F),
             ignore.case = TRUE, value = TRUE)[1] 
   i.band <- raster(file.path(dir.work, dir.fun, x),
-                   package = "raster")
-  ##dataType(band) # Must be INT2U for Landsat 8. Range of Values: 0 to 65534
-  stopifnot(!is.na(i.band@crs)) # Check raster for a projection
-  stopifnot(!is.na(proj4string(maskpoly))) # Check polyg for a projection
+                   package = "raster", values = F)
+  i.band <- setValues(i.band, rep(1, ncell(i.band)))
+  #dataType(band) # Must be INT2U for Landsat 8. Range of Values: 0 to 65534
+  if(is.na(i.band@crs)) stop('Image miss crs information')
+  #stopifnot(!is.na(i.band@crs)) # Check raster for a projection
+  ## Check polyg for a projection
+  if(is.na(proj4string(maskpoly))) stop('polygon miss crs information')
   ## Create Extent object from ae shapefile
-  if(is.null(roi)){
-    i.roi <- extent(maskpoly)
-  } else i.roi <- extent(roi)
+  ## EPSG and reprojection of polygon
+  ###if(f_epsgcode(maskpoly) != f_epsgcode(i.band))
+  maskpoly <- spTransform(maskpoly, CRS(proj4string(i.band)))
+  #i.roi <- extent(maskpoly)
   # Crop Landsat Scene to AE extent
-  i.bandae <- crop(i.band, i.roi) # Crop band to AE Extent
+  #band.1 <- i.band # Raster AE: resolucao 30m (Landast)
+  #band.1[] <- 1 # Defalt value
+  i.bandae <- crop(i.band, maskpoly) # Crop band to AE Extent
+  #i.bandae <- crop(i.band, maskpoly) # Crop band to AE Extent
   ## 2nd: Create the Mask raster to the croped band extent
-  ae.r <- i.bandae # Raster AE: resolucao 30m (Landast)
-  ae.r[] <- 1 # Defalt value
+  #ae.r <- i.bandae # Raster AE: resolucao 30m (Landast)
+  #ae.r[] <- 1 # Defalt value
   ## Overlay AE poly to AE Extent raster
   ## Mask will have 1 and NA values
-  msk.ae <- mask(ae.r, maskpoly, updatevalue=NA)
+  msk.ae <- mask(i.bandae, maskpoly, updatevalue = NA)
   #dataType(mask_ae) <- "INT1U" 
   ## Evaluate rasters
   stopifnot(compareRaster(msk.ae, i.bandae)) 
   msk.ae
 }
 
-mask_ae <- f.CreateRoiMask(roi = roi, maskpoly = ae, maskvalue = NA)
-
+mask_ae <- f_createRoiMask(maskpoly = aeframe[1, ], maskvalue = NA)
 plot(mask_ae); summary(mask_ae)
-writeRaster(mask.ae, filename = file.path(dir.work, dir.landsat, dir.tif,
-                                          "mask_ae.asc"),
+writeRaster(mask.ae, filename = file.path(dir.work, dir.landsat, dir.geotif,
+                                          "mask_aeframe1.asc"),
             overwrite = T)
