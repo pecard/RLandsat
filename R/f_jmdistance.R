@@ -4,7 +4,7 @@
 #'# with the function from Richards and Jia 2006
 #'
 f_jmdist <- function (sig1 , sig2) {
-  # this function adapted from: 
+  # this function was adapted from: 
   # http://stats.stackexchange.com/questions/78849/measure-for-separability
   Matrix.1 <- as.matrix (sig1)
   Matrix.2 <- as.matrix (sig2)
@@ -25,7 +25,6 @@ f_jmdist <- function (sig1 , sig2) {
   # the latter formula is bound between 0 and 1414.0
   return(jm.distance)
 }
-
-df <- data.frame(orange,lemon,pear,apple)   
-library(proxy)
-dist(df,method=jm.dist,by_rows=FALSE)
+dsigs <- dcast(qsigs, class+newcl ~ band, value.var = 'value')[,-2]
+df <
+dist(df, method=jm.dist,by_rows=FALSE)

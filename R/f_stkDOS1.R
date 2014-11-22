@@ -1,8 +1,9 @@
 #' Apply ROI crop to DOS1 bands
 #' Song et al 2000: DOS1 Works just fine for land change detection
-#' ! uses substrBand function
-f_stkDOS1 <- function(roi = roi){
-  bands <- list.files(file.path(dir.work, dir.fun), full.names = T,
+#' ! call internal f_substrBand function
+pathto_dos1 <- 'S:/Raster/Landsat/LC82040522014078LGN00/qgis/dos1'
+f_stkDOS1 <- function(roi = ae, fpath = pathto_dos1){
+  bands <- list.files(fpath, full.names = T,
                       pattern = '.TIF$') 
   stopifnot(length(bands) != 0)
   i.stk <- stack(bands)
@@ -11,7 +12,7 @@ f_stkDOS1 <- function(roi = roi){
   return(i.stk)
 }
 
-stk_dos1 <- f_stkDOS1(roi = aeframe[1, ])
+stk_dos1 <- f_stkDOS1(roi = ae)
 #stk_dos1mar2014 <- f.stkDOS1(roi = roi)
 plot(stk_dos1)
 
