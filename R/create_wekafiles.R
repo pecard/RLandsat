@@ -14,9 +14,14 @@ roi <- extent(c(358977, 368475, 1360958, 1370051))
 stkroi <- crop(stkDOS1, roi)
 plot(stkroi)
 
+# Export the PCA
+foreign::write.arff(as.matrix(stk_pca),
+                    file = file.path('S:/Raster/Landsat/LC82040522014078LGN00/weka/jvieira',
+                                     'pca1_3_stk_pca.arff'))
+# Export to WEKA the mask stack with NAs
 foreign::write.arff(as.matrix(stk_mask),
-                    file = file.path(dir.work, dir.landsat, 'weka',
-                                     'b1_7_weka_stk_mask.arff'))
+                    file = file.path('S:/Raster/Landsat/LC82040522014078LGN00/weka/jvieira',
+                                     'stk_mask.arff'))
 
 raster::writeRaster(stk_mask, file = file.path(dir.work, dir.landsat, 'geotif',
                                                'b1_7_stk_mask.tif'),
@@ -25,8 +30,8 @@ raster::writeRaster(stk_dos1, file = file.path(dir.work, dir.landsat, 'geotif',
                                                'b1_7_stk_dos1.tif'),
                     Format = 'GTiff')
 
-datafrom_weka <- foreign::read.arff(file.path(dir.work, dir.landsat, dir.tif,
-                                              'xmeans_1-7b.arff'))
+datafrom_weka <- foreign::read.arff(file.path('S:/Raster/Landsat/LC82040522014078LGN00/weka/jvieira',
+                                              'jvieira_xmeans14_2.arff'))
 
 mclust <- matrix(as.numeric(datafrom_weka$Cluster),
                  nrow = nrow(stk_pca),
@@ -38,7 +43,7 @@ rclust <- raster(mclust, xmn = stk_pca@extent@xmin, ymn = stk_pca@extent@ymin,
 plot(rclust)
 
 writeRaster(rclust,
-            filename = file.path(dir.work, dir.landsat, dir.tif,
-                                 'weka_6xmeans_1-7b.rst'),
+            filename = file.path('S:/Raster/Landsat/LC82040522014078LGN00/weka/jvieira',
+                                 'weka_14xmeans2_bands.rst'),
             format = 'RST',
             overwrite = TRUE)

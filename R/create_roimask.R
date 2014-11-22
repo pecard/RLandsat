@@ -3,11 +3,20 @@
 #'# considering the way it was setup
 #'## 1st: Read a single Band to get the desired extent based on satellite images
 #'## Change function arguments for the ROI and polygon to apply mask
-f_createRoiMask <- function(maskpoly = ae, maskvalue = NA){
-  x <- grep(".tif$", list.files(file.path(dir.work, dir.fun), all.files = F),
-            ignore.case = TRUE, value = TRUE)[1] 
-  i.band <- raster(file.path(dir.work, dir.fun, x),
-                   package = "raster", values = F)
+band <- raster(file.path(dir.work, dir.landsat,
+                         grep(".tif$",
+                              list.files(file.path(dir.work, dir.landsat),
+                                         all.files = F),
+                              ignore.case = TRUE, value = TRUE)[1]),
+               package = "raster", values = F)
+
+ae <- readOGR(dsn = 'S:/Bissau/bijagos_landcover/vetor',
+              layer = 'jvieira')
+proj4string(ae) <- p.wgs84
+ae <- spTransform(ae, p.utm28n)
+
+f_createRoiMask <- function(maskpoly = ae, maskvalue = NA, band = band){
+  i.band <- band
   i.band <- setValues(i.band, rep(1, ncell(i.band)))
   #dataType(band) # Must be INT2U for Landsat 8. Range of Values: 0 to 65534
   if(is.na(i.band@crs)) stop('Image miss crs information')
@@ -33,10 +42,11 @@ f_createRoiMask <- function(maskpoly = ae, maskvalue = NA){
   #dataType(mask_ae) <- "INT1U" 
   ## Evaluate rasters
   stopifnot(compareRaster(msk.ae, i.bandae)) 
-  msk.ae
+  return(msk.ae)
 }
 
-mask_ae <- f_createRoiMask(maskpoly = aeframe[1, ], maskvalue = NA)
+mask_ae <- f_createRoiMask(maskpoly = ae, maskvalue = NA, band = band)
+
 plot(mask_ae); summary(mask_ae)
 writeRaster(mask.ae, filename = file.path(dir.work, dir.landsat, dir.geotif,
                                           "mask_aeframe1.asc"),

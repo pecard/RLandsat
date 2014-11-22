@@ -18,7 +18,7 @@ f_pca <- function(stk = stk, corr = F, comps = 3){
   return(pcalist)
 }
 #'# Provide the stack object for analysis
-pca_obj <- f.pca(stk = stk_mask, corr = F, comps = 3)
+pca_obj <- f_pca(stk = stk_mask, corr = F, comps = 3)
 stk_pca <- pca_obj[[2]]
 plot(pca_obj[[1]])
 
