@@ -13,7 +13,7 @@
 #' Available methods: 'none', 'cosine', 'ccorrection', 'minnaert'
 
 f_topoCor <- function(stk = stk, method = 'minnaert', dem = dem.ae) {
-  stk_topo <- stack()
+  stk_topo <- raster::stack()
   METHODS <- c('none', 'cosine', 'ccorrection', 'minnaert')
   method <- pmatch(method, METHODS)
   #' SUN Parameters ---
@@ -26,8 +26,8 @@ f_topoCor <- function(stk = stk, method = 'minnaert', dem = dem.ae) {
   #' DEM Parameters for Topo Correction ---
   il.epsilon <- 1e-06
   #' DEM slope and Aspect
-  slope <- dem[['slope']]
-  aspect <- dem[['aspect']]
+  slope <- raster::dem[['slope']]
+  aspect <- raster::dem[['aspect']]
   il.ae <- cos(slope) * cos(sun.z) + sin(slope) *
     sin(sun.z) * cos(sun.a - aspect)
   if(method == 1){
@@ -79,5 +79,5 @@ f_topoCor <- function(stk = stk, method = 'minnaert', dem = dem.ae) {
   stk_out
 }
 
-stk_topoc <- f.TopoCor(stk = stk_dos1, method = 'minnaert', dem = dem.ae) # Test only
+stk_topoc <- f_TopoCor(stk = stk_dos1, method = 'minnaert', dem = dem.ae) # Test only
 plot(ltest)

@@ -17,28 +17,28 @@ ae <- spTransform(ae, p.utm28n)
 
 f_createRoiMask <- function(maskpoly = ae, maskvalue = NA, band = band){
   i.band <- band
-  i.band <- setValues(i.band, rep(1, ncell(i.band)))
+  i.band <- raster::setValues(i.band, rep(1, ncell(i.band)))
   #dataType(band) # Must be INT2U for Landsat 8. Range of Values: 0 to 65534
   if(is.na(i.band@crs)) stop('Image miss crs information')
   #stopifnot(!is.na(i.band@crs)) # Check raster for a projection
   ## Check polyg for a projection
-  if(is.na(proj4string(maskpoly))) stop('polygon miss crs information')
+  if(is.na(sp::proj4string(maskpoly))) stop('polygon miss crs information')
   ## Create Extent object from ae shapefile
   ## EPSG and reprojection of polygon
   ###if(f_epsgcode(maskpoly) != f_epsgcode(i.band))
-  maskpoly <- spTransform(maskpoly, CRS(proj4string(i.band)))
+  maskpoly <- rgdal::spTransform(maskpoly, CRS(proj4string(i.band)))
   #i.roi <- extent(maskpoly)
   # Crop Landsat Scene to AE extent
   #band.1 <- i.band # Raster AE: resolucao 30m (Landast)
   #band.1[] <- 1 # Defalt value
-  i.bandae <- crop(i.band, maskpoly) # Crop band to AE Extent
+  i.bandae <- raster::crop(i.band, maskpoly) # Crop band to AE Extent
   #i.bandae <- crop(i.band, maskpoly) # Crop band to AE Extent
   ## 2nd: Create the Mask raster to the croped band extent
   #ae.r <- i.bandae # Raster AE: resolucao 30m (Landast)
   #ae.r[] <- 1 # Defalt value
   ## Overlay AE poly to AE Extent raster
   ## Mask will have 1 and NA values
-  msk.ae <- mask(i.bandae, maskpoly, updatevalue = NA)
+  msk.ae <- raster::mask(i.bandae, maskpoly, updatevalue = NA)
   #dataType(mask_ae) <- "INT1U" 
   ## Evaluate rasters
   stopifnot(compareRaster(msk.ae, i.bandae)) 

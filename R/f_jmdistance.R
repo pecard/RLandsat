@@ -2,7 +2,7 @@
 #'# Follows the contribution of jlhoward in SO
 #'# http://stackoverflow.com/a/24763982/640783
 #'# with the function from Richards and Jia 2006
-#'
+#' Incomplete
 f_jmdist <- function (sig1 , sig2) {
   # this function was adapted from: 
   # http://stats.stackexchange.com/questions/78849/measure-for-separability
@@ -25,6 +25,7 @@ f_jmdist <- function (sig1 , sig2) {
   # the latter formula is bound between 0 and 1414.0
   return(jm.distance)
 }
-dsigs <- dcast(qsigs, class+newcl ~ band, value.var = 'value')[,-2]
-df <
+
+dsigs <- reshape2::dcast(qsigs, class+newcl ~ band, value.var = 'value')[ ,-2]
+
 dist(df, method=jm.dist,by_rows=FALSE)
